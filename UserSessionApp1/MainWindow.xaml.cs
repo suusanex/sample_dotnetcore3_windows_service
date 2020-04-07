@@ -81,6 +81,9 @@ namespace UserSessionApp1
             Dispatcher.Invoke(() => m_Bind.Result += $"{msg}{Environment.NewLine}");
         }
 
+        private int m_CountForTestException;
+        private bool m_IsEnableTestException;// = true;
+
         private async void OnConnectWindowsService(object sender, RoutedEventArgs e)
         {
             try
@@ -116,6 +119,12 @@ namespace UserSessionApp1
                 {
                     TraceWrite($"Read, {command.ActionCase}");
 
+                    m_CountForTestException++;
+                    if (m_IsEnableTestException && 2 < m_CountForTestException)
+                    {
+                        throw new Exception("over");
+                    }
+
                     switch (command.ActionCase)
                     {
                         case ServiceToUserSessionResponse.ActionOneofCase.None:
@@ -141,6 +150,10 @@ namespace UserSessionApp1
             catch (Exception exception)
             {
                 TraceWrite(exception.ToString());
+            }
+            finally
+            {
+                await DisposeAsync();
             }
 
 
@@ -172,17 +185,24 @@ namespace UserSessionApp1
 
         private async void OnCallServerCallTest(object sender, RoutedEventArgs e)
         {
-            CallTestIndex++;
-
-            await m_DuplexStream.RequestStream.WriteAsync(new UserSesionToServiceRequest
+            try
             {
-                ServerCallTestRequestCall = new ServerCallTestRequest
-                {
-                    Number = CallTestIndex
-                }
-            });
+                CallTestIndex++;
 
-            TraceWrite($"ServerCallTest {CallTestIndex} End");
+                await m_DuplexStream.RequestStream.WriteAsync(new UserSesionToServiceRequest
+                {
+                    ServerCallTestRequestCall = new ServerCallTestRequest
+                    {
+                        Number = CallTestIndex
+                    }
+                });
+
+                TraceWrite($"ServerCallTest {CallTestIndex} End");
+            }
+            catch (Exception exception)
+            {
+                TraceWrite(exception.ToString());
+            }
         }
     }
 }

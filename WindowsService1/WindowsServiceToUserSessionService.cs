@@ -40,61 +40,82 @@ namespace WindowsService1
             {
                 logger.Info($"Connection Canceled, {context},{context.GetHashCode()}");
             }
+            catch (Exception e)
+            {
+                logger.Warn($"{e}");
+            }
 
             logger.Info($"Connection End, {context},{context.GetHashCode()}");
         }
 
         private Timer ResponseTimer;
 
+        private int m_CountForTestException;
+        private bool m_IsEnableTestException;// = true;
+
         async Task RequestWaitAsync(SubscribeData subscribe, CancellationToken cancellationToken)
         {
             logger.Info($"RequestWaitAsync Start");
 
-            await foreach (var req in subscribe.RequestStream.ReadAllAsync(cancellationToken))
+            try
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    break;
-                }
 
-                logger.Info($"Case {req.ActionCase}");
-                switch (req.ActionCase)
+                await foreach (var req in subscribe.RequestStream.ReadAllAsync(cancellationToken))
                 {
-                    case UserSesionToServiceRequest.ActionOneofCase.None:
-                        break;
-                    case UserSesionToServiceRequest.ActionOneofCase.RegisterUserSession:
+                    if (cancellationToken.IsCancellationRequested)
                     {
-                        var val = req.RegisterUserSession;
-                        logger.Info($"RegisterUserSession Call, {val.SessionId}");
-                        m_UserSessions.TryAdd(val.SessionId, subscribe);
+                        break;
+                    }
 
-                        ResponseTimer = new Timer(_ => subscribe.ResponseStream.WriteAsync(new ServiceToUserSessionResponse
-                            {
-                                ExpandEnvironmentStringsAsUserCall = new ExpandEnvironmentStringsAsUserRequest
-                                {
-                                    PathEnv = @"%UserProfile%"
-                                }
-                            }), null,
-                            new TimeSpan(0, 0, 1),
-                            new TimeSpan(0, 0, 5));
+                    logger.Info($"Case {req.ActionCase}");
+                    switch (req.ActionCase)
+                    {
+                        case UserSesionToServiceRequest.ActionOneofCase.None:
+                            break;
+                        case UserSesionToServiceRequest.ActionOneofCase.RegisterUserSession:
+                        {
+                            var val = req.RegisterUserSession;
+                            logger.Info($"RegisterUserSession Call, {val.SessionId}");
+                            m_UserSessions.TryAdd(val.SessionId, subscribe);
+
+                            ResponseTimer = new Timer(_ => subscribe.ResponseStream.WriteAsync(
+                                    new ServiceToUserSessionResponse
+                                    {
+                                        ExpandEnvironmentStringsAsUserCall = new ExpandEnvironmentStringsAsUserRequest
+                                        {
+                                            PathEnv = @"%UserProfile%"
+                                        }
+                                    }), null,
+                                new TimeSpan(0, 0, 1),
+                                new TimeSpan(0, 0, 5));
 
                         }
-                        break;
-                    case UserSesionToServiceRequest.ActionOneofCase.ExpandEnvironmentStringsAsUserReturn:
-                    {
-                        var val = req.ExpandEnvironmentStringsAsUserReturn;
-                        logger.Info($"ExpandEnvironmentStringsAsUserReturn Call, {val.Path}");
+                            break;
+                        case UserSesionToServiceRequest.ActionOneofCase.ExpandEnvironmentStringsAsUserReturn:
+                        {
+                            var val = req.ExpandEnvironmentStringsAsUserReturn;
+                            logger.Info($"ExpandEnvironmentStringsAsUserReturn Call, {val.Path}");
+                            m_CountForTestException++;
+                            if (m_IsEnableTestException && 2 < m_CountForTestException)
+                            {
+                                throw new Exception("over");
+                            }
+                        }
+                            break;
+                        case UserSesionToServiceRequest.ActionOneofCase.ServerCallTestRequestCall:
+                        {
+                            var val = req.ServerCallTestRequestCall;
+                            logger.Info($"ServerCallTestRequestCall Call, {val.Number}");
+                        }
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
-                        break;
-                    case UserSesionToServiceRequest.ActionOneofCase.ServerCallTestRequestCall:
-                    {
-                        var val = req.ServerCallTestRequestCall;
-                        logger.Info($"ServerCallTestRequestCall Call, {val.Number}");
-                    }
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
                 }
+            }
+            finally
+            {
+                ResponseTimer?.Dispose();
             }
         }
 
