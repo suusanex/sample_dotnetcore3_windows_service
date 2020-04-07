@@ -1,0 +1,38 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "ServiceToUserSession";
+
+message UserSesionToServiceRequest {
+	oneof action {
+		RegisterUserSessionRequest RegisterUserSession = 1;
+		ExpandEnvironmentStringsAsUserResponse ExpandEnvironmentStringsAsUserReturn = 2;
+		ServerCallTestRequest ServerCallTestRequestCall = 3;
+	}
+}
+
+message RegisterUserSessionRequest{
+	int32 sessionId = 1;
+}
+
+message ServiceToUserSessionResponse {
+
+	oneof action {
+		ExpandEnvironmentStringsAsUserRequest ExpandEnvironmentStringsAsUserCall = 1;		
+	}
+}
+
+message ServerCallTestRequest {
+	int32 number = 1;
+}
+
+message ExpandEnvironmentStringsAsUserRequest {
+	string pathEnv = 1; // 解決したいパス
+}
+
+message ExpandEnvironmentStringsAsUserResponse {
+	string path = 1; // 解決されたパス
+}
+
+service WindowsServiceToUserSessionService {
+	rpc Subscribe (stream UserSesionToServiceRequest) returns (stream ServiceToUserSessionResponse);
+}

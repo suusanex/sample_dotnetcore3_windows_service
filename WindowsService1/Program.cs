@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -26,7 +27,14 @@ namespace WindowsService1
                 .UseNLog()
                 .ConfigureServices((hostContext, services) =>
                 {
+                    logger.Info($"Add Worker");
                     services.AddHostedService<Worker>();
+                })
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    logger.Info($"Add WebHost Startup");
+                    webBuilder.UseUrls("http://localhost:51232");
+                    webBuilder.UseStartup<Startup>();
                 })
                 .UseWindowsService();
     }

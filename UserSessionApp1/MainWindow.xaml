@@ -5,10 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:UserSessionApp1"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
+        Title="MainWindow" SizeToContent="Height"  Width="800"
         xmlns:tb="http://www.hardcodet.net/taskbar">
-    <Grid>
+    <DockPanel>
         <tb:TaskbarIcon IconSource="/UserSessionApp1;component/Icon1.ico" ToolTipText="hello world" />
-
-    </Grid>
+        <DockPanel Dock="Top">
+            <Button DockPanel.Dock="Top" Margin="5" Content="Connect Windows Service" Click="OnConnectWindowsService" />
+            <Button DockPanel.Dock="Top" Margin="5" Content="Call ServerCallTest" Click="OnCallServerCallTest" />
+        </DockPanel>
+        <TextBlock Text="{Binding Result}" Height="400" TextWrapping="WrapWithOverflow" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+    </DockPanel>
 </Window>
