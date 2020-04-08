@@ -1,0 +1,27 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "ServiceToVSTO";
+
+message VSTOToServiceRequest {
+	oneof action {
+		RegisterVSTORequest RegisterVSTO = 1;
+		ServerCallTestRequest ServerCallTestRequestCall = 2;
+	}
+}
+
+message RegisterVSTORequest{
+	int32 sessionId = 1;
+	int32 processId = 2;
+}
+
+message ServiceToVSTOResponse {
+
+}
+
+message ServerCallTestRequest {
+	string path = 1;
+}
+
+service WindowsServiceToVSTOService {
+	rpc Subscribe (stream VSTOToServiceRequest) returns (ServiceToVSTOResponse);
+}

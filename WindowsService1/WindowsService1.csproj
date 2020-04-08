@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <Protobuf Include="Protos\ServiceToUserSession.proto" GrpcServices="Server" />
+    <Protobuf Include="Protos\ServiceToVSTO.proto" GrpcServices="Server" />
   </ItemGroup>
   
   <ItemGroup>

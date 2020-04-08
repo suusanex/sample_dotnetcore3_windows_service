@@ -38,6 +38,7 @@ namespace WindowsService1
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGrpcService<WindowsServiceToUserSessionServer>();
+                endpoints.MapGrpcService<WindowsServiceToVSTOServer>();
 
                 endpoints.MapGet("/", async context =>
                 {
