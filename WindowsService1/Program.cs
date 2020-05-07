@@ -27,6 +27,9 @@ namespace WindowsService1
                 .UseNLog()
                 .ConfigureServices((hostContext, services) =>
                 {
+                    services.AddSingleton<IDITestClass, DITestClass>();
+                    services.AddSingleton<IDITestClass2, DITestClass2>();
+
                     logger.Info($"Add Worker");
                     services.AddHostedService<Worker>();
                 })

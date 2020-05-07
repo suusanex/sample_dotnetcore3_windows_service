@@ -12,15 +12,19 @@ namespace WindowsService1
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
+        private IDITestClass _diTestClass;
 
-        public Worker(ILogger<Worker> logger)
+        public Worker(ILogger<Worker> logger, IDITestClass diTestClass)
         {
+            _diTestClass = diTestClass;
             _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation($"Service Start: {DateTimeOffset.Now}");
+
+            _diTestClass.TestCall();
 
             try
             {
